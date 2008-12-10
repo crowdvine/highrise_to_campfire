@@ -1,0 +1,13 @@
+Campfire notifier for Highrise emails
+
+Setup
+=====
+
+1. Copy config.example.yml to config.yml and edit
+2. `ruby highrise_to_campfire.rb`
+3. If it works, put it in your cron
+    0,5,10,15,20,25,30,35,40,45,50,55 * * * * (ruby /your_path_here/highrise_to_campfire.rb)
+
+HighriseToCampfire was developed at CrowdVine by Jay Laney (jay@crowdvine.com) and Tony Stubblebine (tony@crowdvine.com)
+
+Unless otherwise noted, all files in this project are licensed under the MIT license (supplied in MIT-LICENSE).

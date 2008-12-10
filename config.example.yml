@@ -1,0 +1,14 @@
+global:
+
+campfire:
+  subdomain: 'example'
+  login: 'you@example.com'
+  password: 'secret'
+  default_room: 1234
+  # False on the free version, true on the pay versions
+  ssl: false  
+
+highrise:
+ subdomain: 'example'
+ # Find this in Highrise: My info -> User Account -> Reveal authentication token
+ token: 'ABCDEF1234567890' 
