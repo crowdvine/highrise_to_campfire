@@ -1,8 +1,9 @@
 require 'rubygems'
+require 'ruby-debug'
+require 'tinder'
 require 'sequel'
 require 'rfeedparser'
 require 'open-uri'
-require File.dirname(__FILE__) + '/lib/marshmallow'
 
 module HighriseToCampfire
   NOTIFY_ON_NEW_ITEMS = true
@@ -16,21 +17,16 @@ module HighriseToCampfire
   def self.highrise_feed 
     @@feed ||= FeedParser.parse(
          open(
-           "http://#{config['highrise']['subdomain']}.highrisehq.com/recordings.atom",
+           "https://#{config['highrise']['subdomain']}.highrisehq.com/recordings.atom",
            :http_basic_authentication => [config['highrise']['token'], 'x']))
   end
   
-  def self.campfire_bot
-    bot = Marshmallow.new(
-              :domain => config['campfire']['subdomain'], 
-              :ssl => false)
+  def self.campfire_room
+    bot = Tinder::Campfire.new(config['campfire']['subdomain'])
 
-    bot.login(:method => :login,
-              :username => config['campfire']['login'],
-              :password => config['campfire']['password'],
-              :room => config['campfire']['room_id']
-           )
-    bot
+    bot.login(config['campfire']['login'],config['campfire']['password'])
+    room = bot.find_room_by_name(config['campfire']['room_name'])
+    room
   end
 
   def self.last_updated_at
@@ -51,21 +47,20 @@ module HighriseToCampfire
   end
   
   def self.notify(entry)
-    bot = campfire_bot
+    bot = campfire_room
     
-    bot.say "#{entry.author_detail.name} did something: #{entry.title}"
-    bot.say "Read more about it here: #{entry.link}"
+    bot.speak "#{entry.author_detail.name} did something: #{entry.title}"
+    bot.speak "Read more about it here: #{entry.link}"
   end
 
   def self.run
     return if highrise_feed.entries.empty?
-
-    highrise_feed.entries.each do |entry|
+    highrise_feed.entries.to_a.each do |entry|
       if Time.parse(entry.updated) > last_updated_at
         notify(entry) if NOTIFY_ON_NEW_ITEMS
       end
     end
-    is_now_updated(Time.parse(highrise_feed.entries.first))
+    is_now_updated(highrise_feed.entries.sort{|b,a| a.updated <=> b.updated}.first.updated.to_s)
   end
 end
 
